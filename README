@@ -1,0 +1,46 @@
+Ceilometer Helm Chart
+===================
+
+Setup
+-----
+
+Vault
+-----
+You need to create a secret in vault with the following keys
+ * transport_url
+ * telemetry_secret
+ * service_credentials_password
+ * bumblebee_password
+ * <site_name>_messaging_urls
+
+Refer to the secret in your values
+
+vault:
+  settings_secret: secret/data/k8s/<namespace>/ceilometer/settings
+
+
+Ceilometer settings
+-----------------
+ conf:
+   network:
+     ipavailability_project_filter:
+       - 1
+   notification:
+     batch_size: 10
+     batch_timeout: 10
+     workers: 8
+   service_credentials:
+     auth_url: "https://keystone:5000"
+     username: "ceilometer"
+     project_name: "service"
+     user_domain_name: "Default"
+     project_domain_name: "Default"
+     region_name: ""
+   dispatcher_gnocchi:
+     filter_project_ids:
+       - project1
+       - project2
+   f5:
+     host: "f5_domain"
+   bumblebee:
+     url: "https://bumblebee/metrics"

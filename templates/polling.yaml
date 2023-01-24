@@ -1,0 +1,3 @@
+{{- if .Values.polling.enabled }}
+{{- include "nectarlib.openstack_worker" (list $ . .Values.polling) }}
+{{- end }}

@@ -1,0 +1,653 @@
+{{- include "nectarlib.configmap" (list . "ceilometer.configmap") -}}
+{{- define "ceilometer.configmap" -}}
+data:
+  pipeline.yaml: |
+    ---
+    sources:
+    - name: meter_source
+      meters:
+      - "*"
+      sinks:
+      - meter_sink
+    sinks:
+    - name: meter_sink
+      publishers:
+      - gnocchi://?filter_project=service
+  polling.yaml: |
+    ---
+    sources:
+    - name: all_pollsters
+      interval: 43200
+      meters:
+      - image.size
+      - ip.floating
+      - storage.objects
+      - storage.objects.*
+      - volume.*
+    - name: half_hourly
+      interval: 1800
+      meters:
+      - nectar.allocations.*
+      - nectar.resource_providers
+      - nectar.network_ip_availability
+      - nectar.container_infra
+      - nectar.application_catalog.*
+      - nectar.accounts
+      - nectar.databases
+      - nectar.loadbalancers
+      - nectar.orchestration.*
+      - nectar.virtual_desktops
+      - nectar.reservation_flavors
+    - name: cinder_pools
+      interval: 300
+      meters:
+      - nectar.cinder_pools
+  gnocchi_resources.yaml: |
+    ---
+    archive_policy_default: ceilometer
+    archive_policies:
+      - name: ceilometer-rate
+        aggregation_methods:
+          - rate:mean
+          - mean
+        back_window: 0
+        definition:
+          - granularity: 5 minutes
+            timespan: 3 days
+          - granularity: 1 hour
+            timespan: 30 days
+          - granularity: 1 day
+            timespan: 365 days
+
+
+    resources:
+      - resource_type: identity
+        metrics:
+          identity.authenticate.success:
+          identity.authenticate.pending:
+          identity.authenticate.failure:
+          identity.user.created:
+          identity.user.deleted:
+          identity.user.updated:
+          identity.group.created:
+          identity.group.deleted:
+          identity.group.updated:
+          identity.role.created:
+          identity.role.deleted:
+          identity.role.updated:
+          identity.project.created:
+          identity.project.deleted:
+          identity.project.updated:
+          identity.trust.created:
+          identity.trust.deleted:
+          identity.role_assignment.created:
+          identity.role_assignment.deleted:
+
+      - resource_type: ceph_account
+        metrics:
+          radosgw.objects:
+          radosgw.objects.size:
+          radosgw.objects.containers:
+          radosgw.api.request:
+          radosgw.containers.objects:
+          radosgw.containers.objects.size:
+
+      - resource_type: instance
+        metrics:
+          memory:
+          memory.usage:
+          memory.resident:
+          memory.swap.in:
+          memory.swap.out:
+          memory.bandwidth.total:
+          memory.bandwidth.local:
+          vcpus:
+          cpu:
+            archive_policy_name: ceilometer-rate
+          cpu_l3_cache:
+          disk.root.size:
+          disk.ephemeral.size:
+          disk.latency:
+          disk.iops:
+          disk.capacity:
+          disk.allocation:
+          disk.usage:
+          compute.instance.booting.time:
+          perf.cpu.cycles:
+          perf.instructions:
+          perf.cache.references:
+          perf.cache.misses:
+        attributes:
+          host: resource_metadata.(instance_host|host)
+          image_ref: resource_metadata.image_ref
+          display_name: resource_metadata.display_name
+          flavor_id: resource_metadata.(instance_flavor_id|(flavor.id)|flavor_id)
+          flavor_name: resource_metadata.(instance_type|(flavor.name)|flavor_name)
+          server_group: resource_metadata.user_metadata.server_group
+          availability_zone: resource_metadata.availability_zone
+        event_delete: compute.instance.delete.start
+        event_create: compute.instance.create.end
+        event_attributes:
+          id: instance_id
+          display_name: display_name
+          host: host
+          flavor_id: instance_type_id
+          flavor_name: instance_type
+          availability_zone: availability_zone
+          user_id: user_id
+          project_id: project_id
+        event_associated_resources:
+          instance_network_interface: '{"=": {"instance_id": "%s"}}'
+          instance_disk: '{"=": {"instance_id": "%s"}}'
+
+      - resource_type: instance_network_interface
+        metrics:
+          network.outgoing.packets:
+            archive_policy_name: ceilometer-rate
+          network.incoming.packets:
+            archive_policy_name: ceilometer-rate
+          network.outgoing.packets.drop:
+            archive_policy_name: ceilometer-rate
+          network.incoming.packets.drop:
+            archive_policy_name: ceilometer-rate
+          network.outgoing.packets.error:
+            archive_policy_name: ceilometer-rate
+          network.incoming.packets.error:
+            archive_policy_name: ceilometer-rate
+          network.outgoing.bytes:
+            archive_policy_name: ceilometer-rate
+          network.incoming.bytes:
+            archive_policy_name: ceilometer-rate
+        attributes:
+          name: resource_metadata.vnic_name
+          instance_id: resource_metadata.instance_id
+
+      - resource_type: instance_disk
+        metrics:
+          disk.device.read.requests:
+            archive_policy_name: ceilometer-rate
+          disk.device.write.requests:
+            archive_policy_name: ceilometer-rate
+          disk.device.read.bytes:
+            archive_policy_name: ceilometer-rate
+          disk.device.write.bytes:
+            archive_policy_name: ceilometer-rate
+          disk.device.latency:
+          disk.device.read.latency:
+          disk.device.write.latency:
+          disk.device.iops:
+          disk.device.capacity:
+          disk.device.allocation:
+          disk.device.usage:
+        attributes:
+          name: resource_metadata.disk_name
+          instance_id: resource_metadata.instance_id
+
+      - resource_type: image
+        metrics:
+          image.size:
+          image.download:
+          image.serve:
+        attributes:
+          name: resource_metadata.name
+          container_format: resource_metadata.container_format
+          disk_format: resource_metadata.disk_format
+        event_delete: image.delete
+        event_attributes:
+          id: resource_id
+
+      - resource_type: network
+        metrics:
+          bandwidth:
+          network:
+          network.create:
+          network.update:
+          subnet:
+          subnet.create:
+          subnet.update:
+          port:
+          port.create:
+          port.update:
+          router:
+          router.create:
+          router.update:
+          ip.floating:
+          ip.floating.create:
+          ip.floating.update:
+          ip.availability.used:
+          ip.availability.total:
+        attributes:
+              name: resource_metadata.name
+        event_delete: floatingip.delete.end
+        event_attributes:
+          id: resource_id
+
+      - resource_type: load_balancer
+        metrics:
+          loadbalancer:
+            archive_policy_name: stats
+
+      - resource_type: database
+        metrics:
+          database:
+            archive_policy_name: stats
+          database.size:
+            archive_policy_name: stats
+        attributes:
+          name: resource_metadata.name
+          flavor_id: resource_metadata.flavor_id
+          datastore_type: resource_metadata.datastore_type
+          datastore_version: resource_metadata.datastore_version
+        event_delete: trove.instance.delete
+        event_attributes:
+          id: resource_id
+
+      - resource_type: stack
+        metrics:
+          stack.create:
+          stack.update:
+          stack.delete:
+          stack.resume:
+          stack.suspend:
+
+      - resource_type: swift_account
+        metrics:
+          storage.objects.incoming.bytes:
+          storage.objects.outgoing.bytes:
+          storage.api.request:
+          storage.objects.size:
+          storage.objects:
+          storage.objects.containers:
+          storage.containers.objects:
+          storage.containers.objects.size:
+
+      - resource_type: volume
+        metrics:
+          volume:
+          volume.size:
+          snapshot.size:
+          volume.snapshot.size:
+          volume.backup.size:
+          backup.size:
+          volume.manage_existing.start:
+          volume.manage_existing.end:
+          volume.manage_existing_snapshot.start:
+          volume.manage_existing_snapshot.end:
+        attributes:
+          display_name: resource_metadata.(display_name|name)
+          volume_type: resource_metadata.volume_type
+          availability_zone: resource_metadata.availability_zone
+        event_delete:
+          - volume.delete.end
+          - snapshot.delete.end
+        event_update: volume.transfer.accept.end
+        event_create: volume.create.end
+        event_attributes:
+          id: resource_id
+          project_id: project_id
+          availability_zone: availability_zone
+
+      - resource_type: volume_provider
+        metrics:
+          volume.provider.capacity.total:
+          volume.provider.capacity.free:
+          volume.provider.capacity.allocated:
+          volume.provider.capacity.provisioned:
+          volume.provider.capacity.virtual_free:
+
+      - resource_type: volume_provider_pool
+        metrics:
+          volume.provider.pool.capacity.total:
+          volume.provider.pool.capacity.free:
+          volume.provider.pool.capacity.allocated:
+          volume.provider.pool.capacity.provisioned:
+          volume.provider.pool.capacity.virtual_free:
+        attributes:
+          provider: resource_metadata.provider
+
+      - resource_type: nova_compute
+        metrics:
+          compute.node.cpu.frequency:
+          compute.node.cpu.idle.percent:
+          compute.node.cpu.idle.time:
+          compute.node.cpu.iowait.percent:
+          compute.node.cpu.iowait.time:
+          compute.node.cpu.kernel.percent:
+          compute.node.cpu.kernel.time:
+          compute.node.cpu.percent:
+          compute.node.cpu.user.percent:
+          compute.node.cpu.user.time:
+        attributes:
+          host_name: resource_metadata.host
+
+      - resource_type: manila_share
+        metrics:
+          manila.share.size:
+        attributes:
+          name: resource_metadata.name
+          host: resource_metadata.host
+          status: resource_metadata.status
+          availability_zone: resource_metadata.availability_zone
+          protocol: resource_metadata.protocol
+
+      - resource_type: switch
+        metrics:
+          switch:
+          switch.ports:
+        attributes:
+          controller: resource_metadata.controller
+
+      - resource_type: switch_port
+        metrics:
+          switch.port:
+          switch.port.uptime:
+          switch.port.receive.packets:
+          switch.port.transmit.packets:
+          switch.port.receive.bytes:
+          switch.port.transmit.bytes:
+          switch.port.receive.drops:
+          switch.port.transmit.drops:
+          switch.port.receive.errors:
+          switch.port.transmit.errors:
+          switch.port.receive.frame_error:
+          switch.port.receive.overrun_error:
+          switch.port.receive.crc_error:
+          switch.port.collision.count:
+        attributes:
+          switch: resource_metadata.switch
+          port_number_on_switch: resource_metadata.port_number_on_switch
+          neutron_port_id: resource_metadata.neutron_port_id
+          controller: resource_metadata.controller
+
+      - resource_type: port
+        metrics:
+          port:
+          port.uptime:
+          port.receive.packets:
+          port.transmit.packets:
+          port.receive.bytes:
+          port.transmit.bytes:
+          port.receive.drops:
+          port.receive.errors:
+        attributes:
+          controller: resource_metadata.controller
+
+      - resource_type: switch_table
+        metrics:
+          switch.table.active.entries:
+        attributes:
+          controller: resource_metadata.controller
+          switch: resource_metadata.switch
+
+      - resource_type: swift_disk
+        metrics:
+          swift.disk.used:
+            archive_policy_name: stats
+          swift.disk.available:
+            archive_policy_name: stats
+          swift.disk.size:
+            archive_policy_name: stats
+        attributes:
+          region: resource_metadata.region
+          host: resource_metadata.host
+          device_name: resource_metadata.device_name
+
+      - resource_type: cinder_pool
+        metrics:
+          cinder.pool.free_capacity:
+            archive_policy_name: stats
+          cinder.pool.provisioned_capacity:
+            archive_policy_name: stats
+          cinder.pool.total_capacity:
+            archive_policy_name: stats
+          cinder.pool.allocated_capacity:
+            archive_policy_name: stats
+        attributes:
+          availability_zone: resource_metadata.availability_zone
+
+      - resource_type: project
+        metrics:
+          quota.swift:
+            archive_policy_name: stats
+          quota.cinder.auckland:
+            archive_policy_name: stats
+          quota.cinder.intersect:
+            archive_policy_name: stats
+          quota.cinder.melbourne:
+            archive_policy_name: stats
+          quota.cinder.monash:
+            archive_policy_name: stats
+          quota.cinder.NCI:
+            archive_policy_name: stats
+          quota.cinder.QRIScloud:
+            archive_policy_name: stats
+          quota.cinder.QRIScloud-rds:
+            archive_policy_name: stats
+          quota.cinder.sa:
+            archive_policy_name: stats
+          quota.cinder.swinburne:
+            archive_policy_name: stats
+          quota.cinder.tasmania:
+            archive_policy_name: stats
+          quota.nova.cores:
+            archive_policy_name: stats
+          quota.nova.ram:
+            archive_policy_name: stats
+          quota.nova.instances:
+            archive_policy_name: stats
+
+      - resource_type: generic
+        metrics:
+          global.allocations.active:
+            archive_policy_name: stats
+          global.allocations.deleted:
+            archive_policy_name: stats
+          global.allocations.pending:
+            archive_policy_name: stats
+          global.allocations.quota.nova.cores:
+            archive_policy_name: stats
+          global.allocations.quota.nova.ram:
+            archive_policy_name: stats
+          global.allocations.quota.nova.instances:
+            archive_policy_name: stats
+          global.allocations.quota.swift:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.auckland:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.intersect:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.melbourne:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.monash:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.NCI:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.QRIScloud:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.QRIScloud-rds:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.sa:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.swinburne:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.tasmania:
+            archive_policy_name: stats
+          global.allocations.quota.budget:
+            archive_policy_name: stats
+          global.resource_provider.usage.vcpu:
+            archive_policy_name: stats
+          global.resource_provider.usage.memory:
+            archive_policy_name: stats
+          global.resource_provider.usage.disk:
+            archive_policy_name: stats
+          global.resource_provider.capacity.cores:
+            archive_policy_name: stats
+          global.resource_provider.capacity.vcpu:
+            archive_policy_name: stats
+          global.resource_provider.capacity.memory:
+            archive_policy_name: stats
+          global.resource_provider.capacity.disk:
+            archive_policy_name: stats
+          global.container_infra.clusters:
+            archive_policy_name: stats
+          global.orchestration.stacks:
+            archive_policy_name: stats
+          global.application_catalog.environments:
+            archive_policy_name: stats
+          global.application_catalog.environments.ready:
+            archive_policy_name: stats
+          global.application_catalog.environments.pending:
+            archive_policy_name: stats
+          global.application_catalog.environments.deploying:
+            archive_policy_name: stats
+          global.application_catalog.environments.deploy_failure:
+            archive_policy_name: stats
+          global.application_catalog.environments.deleting:
+            archive_policy_name: stats
+          global.application_catalog.environments.delete_failure:
+            archive_policy_name: stats
+          global.virtual_desktop.desktops.created:
+            archive_policy_name: stats
+          global.virtual_desktop.desktops.running:
+            archive_policy_name: stats
+          global.virtual_desktop.desktops.shelved:
+            archive_policy_name: stats
+          global.users.total:
+            archive_policy_name: stats
+          global.users.active:
+            archive_policy_name: stats
+          global.users.with_orcid:
+            archive_policy_name: stats
+          global.database.databases:
+            archive_policy_name: stats
+          global.loadbalancer.loadbalancers:
+            archive_policy_name: stats
+          active.projects.database:
+            archive_policy_name: stats
+          active.projects.loadbalancer:
+            archive_policy_name: stats
+          active.projects.application_catalog:
+            archive_policy_name: stats
+          active.projects.container_infra:
+            archive_policy_name: stats
+          active.projects.orchestration:
+            archive_policy_name: stats
+
+      - resource_type: f5_virtual_server
+        metrics:
+          f5.virtualserver.outgoing.bytes:
+            archive_policy_name: stats
+          f5.virtualserver.incoming.bytes:
+            archive_policy_name: stats
+          f5.virtualserver.outgoing.datagrams:
+            archive_policy_name: stats
+          f5.virtualserver.incoming.datagrams:
+            archive_policy_name: stats
+          f5.virtualserver.connections:
+            archive_policy_name: stats
+        attributes:
+          name: resource_metadata.name
+          state: resource_metadata.state
+
+      - resource_type: virtual_desktop_type
+        metrics:
+          virtual_desktop.desktops.created.type:
+            archive_policy_name: stats
+          virtual_desktop.desktops.running.type:
+            archive_policy_name: stats
+          virtual_desktop.desktops.shelved.type:
+            archive_policy_name: stats
+
+      - resource_type: domain
+        metrics:
+          virtual_desktop.desktops.created.domain:
+            archive_policy_name: stats
+          virtual_desktop.desktops.running.domain:
+            archive_policy_name: stats
+          virtual_desktop.desktops.shelved.domain:
+            archive_policy_name: stats
+
+      - resource_type: availability-zone
+        metrics:
+          virtual_desktop.desktops.created.zone:
+            archive_policy_name: stats
+          virtual_desktop.desktops.running.zone:
+            archive_policy_name: stats
+          virtual_desktop.desktops.shelved.zone:
+            archive_policy_name: stats
+
+      - resource_type: resource_provider
+        metrics:
+          resource_provider.usage.vcpu:
+            archive_policy_name: stats
+          resource_provider.usage.memory:
+            archive_policy_name: stats
+          resource_provider.usage.disk:
+            archive_policy_name: stats
+          resource_provider.capacity.cores:
+            archive_policy_name: stats
+          resource_provider.capacity.vcpu:
+            archive_policy_name: stats
+          resource_provider.capacity.memory:
+            archive_policy_name: stats
+          resource_provider.capacity.disk:
+            archive_policy_name: stats
+        attributes:
+          name: resource_metadata.name
+
+      - resource_type: resource_bundle
+        metrics:
+          allocations.bundle:
+            archive_policy_name: stats
+        attributes:
+          name: resource_metadata.name
+
+      - resource_type: allocation_home
+        metrics:
+          allocations.active:
+            archive_policy_name: stats
+          allocations.quota.swift:
+            archive_policy_name: stats
+          allocations.quota.nova.cores:
+            archive_policy_name: stats
+          allocations.quota.nova.ram:
+            archive_policy_name: stats
+          allocations.quota.nova.instances:
+            archive_policy_name: stats
+          allocations.quota.budget:
+            archive_policy_name: stats
+
+      - resource_type: application_catalog_package
+        metrics:
+          application_catalog_package.environments:
+            archive_policy_name: stats
+
+      - resource_type: idp
+        metrics:
+          users.total:
+            archive_policy_name: stats
+
+      - resource_type: reservation
+        metrics:
+          warre.reservation.exists:
+          warre.reservation.in_use:
+        attributes:
+          flavor_id: resource_metadata.flavor_id
+          flavor_name: resource_metadata.flavor_name
+        event_delete: warre.reservation.end
+        event_create: warre.reservation.start
+        event_attributes:
+          id: resource_id
+          flavor_id: flavor_id
+          flavor_name: flavor_name
+          user_id: user_id
+          project_id: project_id
+
+      - resource_type: reservation-flavor
+        metrics:
+          warre.reservation-flavor.capacity:
+        attributes:
+          name: resource_metadata.name
+          availability_zone: resource_metadata.availability_zone
+          category: resource_metadata.category
+{{- end -}}

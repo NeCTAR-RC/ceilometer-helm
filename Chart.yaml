@@ -1,0 +1,15 @@
+apiVersion: v2
+name: ceilometer
+description: A Helm chart for Openstack Ceilometer
+type: application
+version: 2.0.0
+appVersion: "20.0.0-27-gf1caec64-4-14"
+sources:
+  - https://github.com/NeCTAR-RC/ceilometer-helm.git
+dependencies:
+  - name: common
+    repository: oci://registry-1.docker.io/bitnamicharts
+    version: 2.22.0
+  - name: nectarlib
+    version: 1.7.8
+    repository: oci://registry.rc.nectar.org.au/nectar-helm
