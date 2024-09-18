@@ -13,7 +13,7 @@ vault.hashicorp.com/agent-inject-template-secrets.conf: |
    {{ print "[DEFAULT]" }}
    {{ print "transport_url={{ .Data.data.transport_url }}" }}
    {{ print "[notification]" }}
-   {{ print "messaging_urls={{ .Data.data." .Values.siteName "_messaging_urls }}" }}
+   {{ print "{{ .Data.data." .Values.siteName "_messaging_urls }}" }}
    {{ print "[publisher]" }}
    {{ print "telemetry_secret={{ .Data.data.telemetry_secret }}" }}
    {{ print "[service_credentials]" }}

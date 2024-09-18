@@ -11,12 +11,19 @@ You need to create a secret in vault with the following keys
  * telemetry_secret
  * service_credentials_password
  * bumblebee_password
- * <site_name>_messaging_urls
+ * <site_name>_messaging_urls [1]
+
+
+[1] <site_name>_messaging_urls in Vault is in a different format, like:
+  messaging_urls=url1
+  messaging_urls=url2
+
 
 Refer to the secret in your values
 
 vault:
   settings_secret: secret/data/k8s/<namespace>/ceilometer/settings
+  event_pipeline:
 
 
 Ceilometer settings
