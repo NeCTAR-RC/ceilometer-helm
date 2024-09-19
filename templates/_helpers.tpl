@@ -21,7 +21,7 @@ vault.hashicorp.com/agent-inject-template-secrets.conf: |
    {{ print "[bumblebee]" }}
    {{ print "password={{ .Data.data.bumblebee_password}}" }}
    {{ print "{{- end -}}" }}
-vault.hashicorp.com/secret-volume-path-event_pipeline.yaml: /etc/ceilomter
+vault.hashicorp.com/secret-volume-path-event_pipeline.yaml: /etc/ceilometer
 vault.hashicorp.com/agent-inject-secret-event_pipeline.yaml: "{{ .Values.vault.event_pipeline}}"
 vault.hashicorp.com/agent-inject-template-event_pipeline.yaml: |
   {{ print "{{- with secret \"" .Values.vault.event_pipeline "\" -}}" }}
