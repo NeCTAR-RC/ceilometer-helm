@@ -3,6 +3,7 @@
 http_timeout = {{ .Values.conf.http_timeout }}
 debug = {{ .Values.conf.debug }}
 polling_namespaces = {{ .Values.conf.polling_namespaces }}
+event_pipeline_cfg_file = event_pipeline/event_pipeline.yaml
 
 [network]
 {{- if .Values.conf.network.ipavailability_project_filter }}

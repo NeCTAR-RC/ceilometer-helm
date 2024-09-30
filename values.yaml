@@ -97,9 +97,9 @@ podAnnotations: {}
 
 podSecurityContext:
   runAsNonRoot: true
-  runAsUser: 42408
-  runAsGroup: 42408
-  fsGroup: 42408
+  runAsUser: 42405
+  runAsGroup: 42405
+  fsGroup: 42405
   seccompProfile:
     type: RuntimeDefault
 
