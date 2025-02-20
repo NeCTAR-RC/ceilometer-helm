@@ -464,13 +464,31 @@ data:
             archive_policy_name: stats
           global.allocations.quota.cinder.QRIScloud:
             archive_policy_name: stats
-          global.allocations.quota.cinder.QRIScloud-rds:
+          global.allocations.quota.cinder.ardc:
             archive_policy_name: stats
           global.allocations.quota.cinder.sa:
             archive_policy_name: stats
           global.allocations.quota.cinder.swinburne:
             archive_policy_name: stats
           global.allocations.quota.cinder.tasmania:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.encrypted-auckland:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.encrypted-intersect:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.encrypted-melbourne:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.encrypted-monash:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.encrypted-QRIScloud:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.encrypted-ardc:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.encrypted-swinburne:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.encrypted-tasmania:
+            archive_policy_name: stats
+          global.allocations.quota.cinder.performance-melbourne:
             archive_policy_name: stats
           global.allocations.quota.budget:
             archive_policy_name: stats
