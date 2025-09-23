@@ -51,3 +51,14 @@ Ceilometer settings
      host: "f5_domain"
    bumblebee:
      url: "https://bumblebee/metrics"
+
+Pipeline publishers
+-------------------
+You can configure the Ceilometer pipeline publishers (for pipeline.yaml) via values:
+
+pipeline:
+  publishers:
+    - "gnocchi://?filter_project=service"  # default
+    - "prometheus://pushgateway-prometheus-pushgateway.observability:9091/metrics/job/openstack"  # Prometheus Pushgateway
+
+If not set, it defaults to the gnocchi publisher shown above.

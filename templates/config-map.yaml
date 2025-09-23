@@ -12,7 +12,13 @@ data:
     sinks:
     - name: meter_sink
       publishers:
+{{- if .Values.pipeline.publishers }}
+{{- range .Values.pipeline.publishers }}
+      - {{ . | quote }}
+{{- end }}
+{{- else }}
       - gnocchi://?filter_project=service
+{{- end }}
   polling.yaml: |
     ---
     sources:

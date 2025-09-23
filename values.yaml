@@ -73,6 +73,12 @@ conf:
     url: ""
     username: "metrics"
 
+# Ceilometer pipeline.yaml options
+pipeline:
+  # List of publisher URLs; defaults to gnocchi sink
+  publishers:
+    - "gnocchi://?filter_project=service"
+
 vault:
   role: k8s
   settings_secret: "path/to/secret/in/vault"
