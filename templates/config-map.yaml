@@ -674,4 +674,20 @@ data:
           name: resource_metadata.name
           availability_zone: resource_metadata.availability_zone
           category: resource_metadata.category
+
+      - resource_type: notebook
+        attributes:
+          server_name: resource_metadata.server_name
+          profile: resource_metadata.profile
+          image: resource_metadata.image
+          hub: resource_metadata.hub
+        event_create: jupyterhub.notebook.start
+        event_delete: jupyterhub.notebook.stop
+        event_attributes:
+          id: resource_id
+          user_id: user_id
+          server_name: server_name
+          profile: profile
+          image: image
+          hub: hub
 {{- end -}}
