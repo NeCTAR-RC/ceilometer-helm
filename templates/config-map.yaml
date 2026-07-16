@@ -654,7 +654,9 @@ data:
       - resource_type: reservation
         metrics:
           warre.reservation.exists:
+            archive_policy_name: stats
           warre.reservation.in_use:
+            archive_policy_name: stats
         attributes:
           flavor_id: resource_metadata.flavor_id
           flavor_name: resource_metadata.flavor_name
@@ -670,6 +672,7 @@ data:
       - resource_type: reservation-flavor
         metrics:
           warre.reservation-flavor.capacity:
+            archive_policy_name: stats
         attributes:
           name: resource_metadata.name
           availability_zone: resource_metadata.availability_zone
