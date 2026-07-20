@@ -2,7 +2,7 @@ apiVersion: v2
 name: ceilometer
 description: A Helm chart for Openstack Ceilometer
 type: application
-version: 4.2.0
+version: 4.3.0
 appVersion: "24.0.1-10-gd4373863d-4-13"
 sources:
   - https://github.com/NeCTAR-RC/ceilometer-helm.git

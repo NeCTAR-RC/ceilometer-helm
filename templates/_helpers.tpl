@@ -27,4 +27,11 @@ vault.hashicorp.com/agent-inject-template-event_pipeline.yaml: |
   {{ print "{{- with secret \"" .Values.vault.event_pipeline "\" -}}" }}
   {{ print "{{ .Data.data.content }}" }}
   {{ print "{{- end -}}" }}
+{{- if .Values.sentry.enabled }}
+vault.hashicorp.com/agent-inject-secret-sentry.env: "{{ .Values.vault.settings_secret }}"
+vault.hashicorp.com/agent-inject-template-sentry.env: |
+  {{ print "{{- with secret \"" .Values.vault.settings_secret "\" -}}" }}
+  {{ print "{{- with .Data.data.sentry_dsn }}SENTRY_DSN={{ . }}{{ end }}" }}
+  {{ print "{{- end -}}" }}
+{{- end }}
 {{- end }}
