@@ -689,4 +689,6 @@ data:
           profile: profile
           image: image
           hub: hub
+          repo_url: repo_url
+          ref_url: ref_url
 {{- end -}}
