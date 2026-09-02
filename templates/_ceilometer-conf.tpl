@@ -19,7 +19,6 @@ workers = {{ .Values.conf.notification.workers }}
 topics = notifications
 
 [oslo_messaging_rabbit]
-rabbit_transient_queues_ttl = 600
 amqp_durable_queues = True
 ssl = True
 ssl_version = TLSv1_2
