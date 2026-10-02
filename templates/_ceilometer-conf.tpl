@@ -19,10 +19,9 @@ workers = {{ .Values.conf.notification.workers }}
 topics = notifications
 
 [oslo_messaging_rabbit]
-amqp_durable_queues = True
 ssl = True
-ssl_version = TLSv1_2
-rabbit_ha_queues = True
+rabbit_quorum_queue=true
+rabbit_transient_quorum_queue=true
 rabbit_qos_prefetch_count = {{ .Values.conf.oslo_messaging_rabbit.rabbit_qos_prefetch_count }}
 
 [service_credentials]
