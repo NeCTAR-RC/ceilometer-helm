@@ -47,6 +47,8 @@ Ceilometer settings
      filter_project_ids:
        - project1
        - project2
+   gnocchi:
+     interface: public
    f5:
      host: "f5_domain"
    bumblebee:
@@ -62,3 +64,17 @@ pipeline:
     - "prometheus://pushgateway-prometheus-pushgateway.observability:9091/metrics/job/openstack"  # Prometheus Pushgateway
 
 If not set, it defaults to the gnocchi publisher shown above.
+
+Gnocchi endpoint interface
+--------------------------
+By default ceilometer reaches gnocchi via the public endpoint from the
+keystone catalog. To use the internal (or admin) endpoint instead, set:
+
+conf:
+  gnocchi:
+    interface: internal
+
+This renders a [gnocchi_credentials] section (a copy of service_credentials,
+with the password injected from vault) and points [gnocchi] auth_section at
+it, so only gnocchi traffic is affected. Other services keep using the
+public endpoints.

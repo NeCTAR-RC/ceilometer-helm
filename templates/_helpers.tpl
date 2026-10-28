@@ -20,6 +20,10 @@ vault.hashicorp.com/agent-inject-template-secrets.conf: |
    {{ print "password={{ .Data.data.service_credentials_password}}" }}
    {{ print "[bumblebee]" }}
    {{ print "password={{ .Data.data.bumblebee_password}}" }}
+{{- if and .Values.conf.gnocchi.interface (ne .Values.conf.gnocchi.interface "public") }}
+   {{ print "[gnocchi_credentials]" }}
+   {{ print "password={{ .Data.data.service_credentials_password}}" }}
+{{- end }}
    {{ print "{{- end -}}" }}
 vault.hashicorp.com/secret-volume-path-event_pipeline.yaml: /etc/ceilometer/event_pipeline
 vault.hashicorp.com/agent-inject-secret-event_pipeline.yaml: "{{ .Values.vault.event_pipeline}}"
